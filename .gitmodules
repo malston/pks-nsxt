@@ -1,0 +1,3 @@
+[submodule "control-plane-nsxt"]
+	path = control-plane-nsxt
+	url = git@github.com:miclip/control-plane-nsxt.git
