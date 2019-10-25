@@ -1,0 +1,11 @@
+,DS_Store
+
+releases/
+downloads/
+secrets/
+state/
+
+.envrc
+*-config
+
+templates/plugins/
