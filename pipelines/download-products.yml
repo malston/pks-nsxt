@@ -1,0 +1,104 @@
+---
+resource_types:
+  - name: pivnet
+    type: docker-image
+    source:
+      repository: pivotalcf/pivnet-resource
+      tag: latest-final
+
+resources:
+  - name: opsman-product
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: \[ops-manager,(.*)\].*.ova
+  - name: platform-automation-pivnet
+    type: pivnet
+    source:
+      api_token: ((pivnet_token))
+      product_slug: platform-automation
+      product_version: 2\.(.*)
+      sort_by: semver
+  - name: platform-automation-tasks
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: platform-automation-tasks-(.*).zip
+  - name: platform-automation-image
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      secret_access_key: ((s3_secret_access_key))
+      endpoint: ((s3.endpoint))
+      regexp: platform-automation-image-(.*).tgz
+  - name: config
+    type: git
+    source:
+      private_key: ((git.private_key))
+      uri: ((git_repository_url))
+      branch: master
+      submodules: all
+      depth: 1
+  - name: daily
+    type: time
+    source:
+      interval: 24h
+
+credhub-interpolate: &credhub-interpolate
+  image: platform-automation-image
+  file: platform-automation-tasks/tasks/credhub-interpolate.yml
+  params:
+    CREDHUB_CLIENT: ((credhub-client))
+    CREDHUB_SECRET: ((credhub-secret))
+    CREDHUB_SERVER: ((credhub-server))
+    CREDHUB_CA_CERT: ((credhub-ca-cert))
+    PREFIX: '/concourse/main'
+    INTERPOLATION_PATHS: "/environment/((environment))/download-product-config"
+  input_mapping:
+    files: config
+  output_mapping:
+    interpolated-files: config
+
+jobs:
+  - name: fetch-opsman
+    plan:
+      - aggregate:
+          - get: daily
+            trigger: true
+          - get: platform-automation-image
+            params:
+              unpack: true
+          - get: platform-automation-tasks
+            params:
+              unpack: true
+          - get: config
+      - task: credhub-interpolate
+        <<: *credhub-interpolate
+      - task: download-opsman-image
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/download-product.yml
+        params:
+          CONFIG_FILE: environments/((environment))/download-product-configs/opsman.yml
+      - aggregate:
+          - put: opsman-product
+            params:
+              file: downloaded-product/*
+  - name: fetch-platform-automation
+    plan:
+      - get: platform-automation-pivnet
+        trigger: true
+      - aggregate:
+          - put: platform-automation-tasks
+            params:
+              file: platform-automation-pivnet/*tasks*.zip
+          - put: platform-automation-image
+            params:
+              file: platform-automation-pivnet/*image*.tgz
+

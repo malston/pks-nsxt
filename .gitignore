@@ -6,6 +6,5 @@ secrets/
 state/
 
 .envrc
-*-config
 
 templates/plugins/
