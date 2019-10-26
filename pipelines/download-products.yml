@@ -14,13 +14,14 @@ resources:
       bucket: ((s3.buckets.pivnet_products))
       endpoint: ((s3.endpoint))
       secret_access_key: ((s3_secret_access_key))
-      regexp: \[ops-manager,(.*)\].*.ova
+      regexp: ops-manager-(.*).ova
+      skip_ssl_verification: true
   - name: platform-automation-pivnet
     type: pivnet
     source:
       api_token: ((pivnet_token))
       product_slug: platform-automation
-      product_version: 2\.(.*)
+      product_version: 4\.(.*)
       sort_by: semver
   - name: platform-automation-tasks
     type: s3
@@ -30,6 +31,7 @@ resources:
       endpoint: ((s3.endpoint))
       secret_access_key: ((s3_secret_access_key))
       regexp: platform-automation-tasks-(.*).zip
+      skip_ssl_verification: true
   - name: platform-automation-image
     type: s3
     source:
@@ -38,6 +40,7 @@ resources:
       secret_access_key: ((s3_secret_access_key))
       endpoint: ((s3.endpoint))
       regexp: platform-automation-image-(.*).tgz
+      skip_ssl_verification: true
   - name: config
     type: git
     source:
@@ -60,7 +63,7 @@ credhub-interpolate: &credhub-interpolate
     CREDHUB_SERVER: ((credhub-server))
     CREDHUB_CA_CERT: ((credhub-ca-cert))
     PREFIX: '/concourse/main'
-    INTERPOLATION_PATHS: "/environment/((environment))/download-product-config"
+    INTERPOLATION_PATHS: "environments/((environment))/download-product-config"
   input_mapping:
     files: config
   output_mapping:
@@ -85,7 +88,7 @@ jobs:
         image: platform-automation-image
         file: platform-automation-tasks/tasks/download-product.yml
         params:
-          CONFIG_FILE: environments/((environment))/download-product-configs/opsman.yml
+          CONFIG_FILE: environments/((environment))/download-product-config/opsman.yml
       - aggregate:
           - put: opsman-product
             params:
