@@ -34,6 +34,24 @@ resources:
       secret_access_key: ((s3_secret_access_key))
       regexp: pks-stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
       skip_ssl_verification: true
+  - name: harbor-product
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: harbor-container-registry-(.*)\.pivotal
+      skip_ssl_verification: true
+  - name: harbor-stemcell
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: harbor-stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
+      skip_ssl_verification: true
   - name: platform-automation-pivnet
     type: pivnet
     source:
@@ -135,6 +153,32 @@ jobs:
             params:
               file: downloaded-product/*
           - put: pks-stemcell
+            params:
+              file: downloaded-stemcell/*
+  - name: fetch-harbor
+    plan:
+      - aggregate:
+          - get: daily
+            trigger: true
+          - get: platform-automation-image
+            params:
+              unpack: true
+          - get: platform-automation-tasks
+            params:
+              unpack: true
+          - get: config
+      - task: credhub-interpolate
+        <<: *credhub-interpolate
+      - task: download-harbor-image
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/download-product.yml
+        params:
+          CONFIG_FILE: environments/((environment))/download-product-config/harbor.yml
+      - aggregate:
+          - put: harbor-product
+            params:
+              file: downloaded-product/*
+          - put: harbor-stemcell
             params:
               file: downloaded-stemcell/*
   - name: fetch-platform-automation
