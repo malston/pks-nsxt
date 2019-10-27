@@ -12,5 +12,5 @@ opsman_resource_pool: pks-az1
 opsman_dns: 10.192.2.10,10.192.2.11
 opsman_ntp: time.svc.pivotal.io
 opsman_netmask: 255.255.255.0
-:opsman_ssh_public_key: ((opsman_ssh.public_key))
+opsman_ssh_public_key: ((opsman_ssh.public_key))
 vm_name: pks-opsman
