@@ -31,5 +31,5 @@ services_reserved_ip_ranges: 172.16.2.1-172.16.2.10
 services_dns: 10.192.2.10,10.192.2.11
 services_gateway: 172.16.2.1
 nsx_host: nsxmgr-01.haas-445.pez.pivotal.io
-nsx_ca_cert: ((nsx_cert.certifcate))
+nsx_ca_cert: ((nsx_ca.certifcate))
 
