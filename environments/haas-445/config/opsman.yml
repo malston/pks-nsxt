@@ -1,0 +1,21 @@
+opsman-configuration:
+  vsphere:
+    vcenter:
+      url: ((vcenter_host))
+      username: ((vcenter_user))
+      password: ((vcenter_password))
+      datastore: ((opsman_datastore))
+      resource_pool: ((opsman_resource_pool))
+      datacenter: ((vsphere_datacenter))
+      folder: ((vsphere_folder))
+      insecure: 1
+    disk_type: thin
+    private_ip: ((opsman_private_ip))
+    dns: ((opsman_dns))
+    ntp: ((opsman_ntp))
+    ssh_password: ((opsman_ssh_password))
+    hostname: ((opsman_host))
+    network: ((opsman_network))
+    netmask: ((opsman_netmask))
+    gateway: ((opsman_network_gateway))
+    vm_name: ((vm_name))

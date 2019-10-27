@@ -1,0 +1,16 @@
+vcenter_host: vcsa-01.haas-445.pez.pivotal.io
+vcenter_user: administrator@vsphere.local
+vcenter_password: ((vcenter_password))
+vsphere_datacenter: Datacenter
+vsphere_folder: /Datacenter/vm/pks_vms
+opsman_host: opsmgr-02.haas-445.pez.pivotal.io
+opsman_private_ip: 172.16.1.10
+opsman_network: PKS-Infrastructure
+opsman_network_gateway: 172.16.1.1
+opsman_datastore: LUN01
+opsman_resource_pool: pks-az1
+opsman_dns: 10.192.2.10,10.192.2.11
+opsman_ntp: time.svc.pivotal.io
+opsman_netmask: 255.255.255.0
+opsman_ssh_password: ((opsman_ssh_password))
+vm_name: pks-opsman

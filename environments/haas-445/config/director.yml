@@ -1,0 +1,71 @@
+properties-configuration:
+  iaas_configuration:
+    vcenter_host: ((vcenter_host))
+    vcenter_username: ((vcenter_username))
+    vcenter_password: ((vcenter_password))
+    datacenter: ((vsphere_datacenter))
+    ssl_verification_enabled: false
+    disk_type: thin
+    ephemeral_datastores_string: ((ephemeral_datastores))
+    persistent_datastores_string: ((persistent_datastores))
+    bosh_vm_folder: ((vsphere_folder))
+    bosh_template_folder: ((bosh_template_folder))
+    bosh_disk_path: ((bosh_disk_path))
+    nsx_networking_enabled: true
+    nsx_mode: nsx-t
+    nsx_address: ((nsx_host))
+    nsx_username: ((nsx_admin_user))
+    nsx_password: ((nsx_admin_password))
+    nsx_ca_certificate: ((nsx_ca_cert))
+  director_configuration:
+    ntp_servers_string: ((ntp))
+    resurrector_enabled: true
+    post_deploy_enabled: ((bosh_post_deploy_enabled))
+  security_configuration:
+    trusted_certificates: ((trusted_certs))
+az-configuration:
+- name: pks-az1
+  clusters:
+  - cluster: ((az1_cluster))
+    resource_pool: ((az1_resource_pool))
+- name: pks-az2
+  clusters:
+  - cluster: ((az2_cluster))
+    resource_pool: ((az2_resource_pool))
+- name: pks-az3
+  clusters:
+  - cluster: ((az2_cluster))
+    resource_pool: ((az2_resource_pool))
+network-assignment:
+  singleton_availability_zone:
+    name: pks-az1
+  network:
+    name: infrastructure
+networks-configuration:
+  icmp_checks_enabled: false
+  networks:
+  - name: infrastructure
+    service_network: false
+    subnets:
+    - iaas_identifier: ((infrastructure_network))
+      cidr: ((infrastructure_cidr))
+      reserved_ip_ranges: ((infrastructure_reserved_ip_ranges))
+      dns: ((infrastructure_dns))
+      gateway: ((infrastructure_gateway))
+      availability_zone_names:
+      - pks-az1
+      - pks-az2
+      - pks-az3
+  - name: services
+    service_network: false
+    subnets:
+    - iaas_identifier: ((services_network))
+      cidr: ((services_cidr))
+      reserved_ip_ranges: ((services_reserved_ip_ranges))
+      dns: ((services_dns))
+      gateway: ((services_gateway))
+      availability_zone_names:
+      - pks-az1
+      - pks-az2
+      - pks-az3
+
