@@ -21,8 +21,8 @@ properties-configuration:
     ntp_servers_string: ((ntp))
     resurrector_enabled: true
     post_deploy_enabled: ((bosh_post_deploy_enabled))
-  security_configuration:
-    trusted_certificates: ((trusted_certs))
+    #  security_configuration:
+    #    trusted_certificates: ((trusted_certs))
 az-configuration:
 - name: pks-az1
   clusters:

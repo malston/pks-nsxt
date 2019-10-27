@@ -13,7 +13,7 @@ opsman-configuration:
     private_ip: ((opsman_private_ip))
     dns: ((opsman_dns))
     ntp: ((opsman_ntp))
-    ssh_password: ((opsman_ssh_password))
+    ssh_public_key: ((opsman_ssh_public_key))
     hostname: ((opsman_host))
     network: ((opsman_network))
     netmask: ((opsman_netmask))

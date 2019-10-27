@@ -1,1 +1,212 @@
 ---
+resources:
+  - name: opsman-product
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: ops-manager-(.*).ova
+      skip_ssl_verification: true
+  - name: state
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.state))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: ((environment))/(state).yml
+      skip_ssl_verification: true
+#  - name: pks-product
+#    type: s3
+#    source:
+#      access_key_id: ((s3_access_key_id))
+#      bucket: ((s3.buckets.pivnet_products))
+#      endpoint: ((s3.endpoint))
+#      secret_access_key: ((s3_secret_access_key))
+#      regexp: pivotal-container-service-(.*).pivotal
+#      skip_ssl_verification: true
+#  - name: pks-stemcell
+#    type: s3
+#    source:
+#      access_key_id: ((s3_access_key_id))
+#      bucket: ((s3.buckets.pivnet_products))
+#      endpoint: ((s3.endpoint))
+#      secret_access_key: ((s3_secret_access_key))
+#      regexp: pks-stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
+#      skip_ssl_verification: true
+#  - name: harbor-product
+#    type: s3
+#    source:
+#      access_key_id: ((s3_access_key_id))
+#      bucket: ((s3.buckets.pivnet_products))
+#      endpoint: ((s3.endpoint))
+#      secret_access_key: ((s3_secret_access_key))
+#      regexp: harbor-container-registry-(.*)\.pivotal
+#      skip_ssl_verification: true
+#  - name: harbor-stemcell
+#    type: s3
+#    source:
+#      access_key_id: ((s3_access_key_id))
+#      bucket: ((s3.buckets.pivnet_products))
+#      endpoint: ((s3.endpoint))
+#      secret_access_key: ((s3_secret_access_key))
+#      regexp: harbor-stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
+#      skip_ssl_verification: true
+  - name: installation
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.installation))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: pks-installation-(.*).zip
+      skip_ssl_verification: true
+  - name: platform-automation-tasks
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: platform-automation-tasks-(.*).zip
+      skip_ssl_verification: true
+  - name: platform-automation-image
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      secret_access_key: ((s3_secret_access_key))
+      endpoint: ((s3.endpoint))
+      regexp: platform-automation-image-(.*).tgz
+      skip_ssl_verification: true
+  - name: config
+    type: git
+    source:
+      private_key: ((git.private_key))
+      uri: ((git_repository_url))
+      branch: master
+      submodules: all
+      depth: 1
+  - name: one-time-trigger
+    type: time
+    source:
+      interval: 999999h
+  - name: daily-trigger
+    type: time
+    source:
+      interval: 24h
+
+credhub-interpolate: &credhub-interpolate
+  image: platform-automation-image
+  file: platform-automation-tasks/tasks/credhub-interpolate.yml
+  params:
+    CREDHUB_CLIENT: ((credhub-client))
+    CREDHUB_SECRET: ((credhub-secret))
+    CREDHUB_SERVER: ((credhub-server))
+    CREDHUB_CA_CERT: ((credhub-ca-cert))
+    PREFIX: '/concourse/main'
+    INTERPOLATION_PATHS: "environments/((environment))/vars environments/((environment))/env"
+  input_mapping:
+    files: config
+  output_mapping:
+    interpolated-files: vars
+
+jobs:
+  - name: install-opsman
+    serial: true
+    serial_groups: [install]
+    plan:
+      - aggregate:
+          - get: platform-automation-image
+            params:
+              unpack: true
+          - get: one-time-trigger
+            trigger: true
+          - get: platform-automation-tasks
+            params:
+              unpack: true
+          - get: config
+          - get: state
+          - get: opsman-product
+      - task: credhub-interpolate
+        <<: *credhub-interpolate
+      - task: create-vm
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/create-vm.yml
+        input_mapping:
+          image: opsman-product
+        params:
+          VARS_FILES: vars/environments/((environment))/vars/opsman.yml
+          STATE_FILE: state/((environment))/state.yml
+          OPSMAN_CONFIG_FILE: /environments/((environment))/config/opsman.yml
+        ensure: &put-state
+          do:
+            - put: state
+              params:
+                file: generated-state/state.yml
+      - task: configure-authentication
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/configure-authentication.yml
+        attempts: 10
+        input_mapping:
+          env: vars
+        params:
+          ENV_FILE: vars/environments/((environment))/env/env.yml
+          AUTH_CONFIG_FILE: environments/((environment))/vars/auth.yml
+      - task: configure-director
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/configure-director.yml
+        input_mapping:
+          env: vars
+        params:
+          ENV_FILE: vars/environments/((environment))/env/env.yml
+          DIRECTOR_CONFIG_FILE: environments/((environment))/config/director.yml
+          VARS_FILES: vars/environments/((environment))/vars/director.yml
+      - task: apply-director-changes
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/apply-director-changes.yml
+        input_mapping:
+          env: vars
+        params:
+          ENV_FILE: vars/environments/((environment))/env/env.yml
+      - task: export-installation
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/export-installation.yml
+        input_mapping:
+          env: vars
+        params:
+          ENV_FILE: vars/environments/((environment))/env/env.yml
+          INSTALLATION_FILE: pks-installation-$timestamp.zip
+      - put: installation
+        params:
+          file: installation/pks-installation*.zip
+
+  - name: export-installation
+    serial: true
+    plan:
+      - aggregate:
+          - get: daily-trigger
+            trigger: true
+          - get: platform-automation-image
+            params:
+              unpack: true
+            passed: [install-opsman]
+          - get: platform-automation-tasks
+            params:
+              unpack: true
+          - get: config
+      - task: credhub-interpolate
+        <<: *credhub-interpolate
+      - task: export-installation
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/export-installation.yml
+        input_mapping:
+          env: vars
+        params:
+          ENV_FILE: vars/environments/((environment))/env/env.yml
+          INSTALLATION_FILE: pks-installation-$timestamp.zip
+      - put: installation
+        params:
+          file: installation/pks-installation*.zip

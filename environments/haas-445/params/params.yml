@@ -3,5 +3,7 @@ environment: haas-445
 s3:
   buckets:
     pivnet_products: pivnet-products
+    installation: installation
+    state: states
   endpoint: https://minio.haas-445.pez.pivotal.io
 git_repository_url: git@github.com:miclip/pks-nsxt.git
