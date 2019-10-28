@@ -171,7 +171,7 @@ jobs:
         input_mapping:
           env: vars
         params:
-          ENV_FILE: vars/environments/((environment))/env/env.yml
+          ENV_FILE: environments/((environment))/env/env.yml
       - task: export-installation
         image: platform-automation-image
         file: platform-automation-tasks/tasks/export-installation.yml

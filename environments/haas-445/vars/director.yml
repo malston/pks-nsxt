@@ -13,7 +13,7 @@ bosh_disk_path: pks_disks
 ntp: time.svc.pivotal.io
 nsx_host: nsxmgr-01.haas-445.pez.pivotal.io
 nsx_admin_user: admin
-nsx_admin_password: ((nsx_admin_password))
+nsx_admin_password: "((nsx_admin_password))"
 az1_cluster: Cluster
 az1_resource_pool: pks-az1
 az2_cluster: Cluster
