@@ -1,5 +1,5 @@
 harbor_admin_password: ((harbor_admin_password))
-harbor_server_cert_pem: ((pks_certificate.public_key))
+harbor_server_cert_pem: ((pks_certificate.certificate))
 harbor_private_key_pem: ((pks_certificate.private_key))
 harbor_hostname: harbor.haas-445.pez.pivotal.io
-harbor_server_cert_ca: ((pks_certificate_ca.public_key))
+harbor_server_cert_ca: ((pks_certificate_ca.certificate))
