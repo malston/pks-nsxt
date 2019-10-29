@@ -90,9 +90,6 @@ product-properties:
   .properties.proxy_selector:
     selected_option: disabled
     value: Disabled
-  .properties.sink_resources_selector:
-    selected_option: enabled
-    value: enabled
   .properties.syslog_selector:
     selected_option: disabled
     value: disabled
@@ -102,8 +99,6 @@ product-properties:
   .properties.uaa:
     selected_option: internal
     value: internal
-  .properties.uaa_oidc:
-    value: false
   .properties.uaa_pks_cli_access_token_lifetime:
     value: 600
   .properties.uaa_pks_cli_refresh_token_lifetime:
