@@ -65,8 +65,6 @@ product-properties:
   .properties.plan1_selector.active.description:
     value: 'Example: This plan will configure a lightweight kubernetes cluster. Not
       recommended for production workloads.'
-  .properties.plan1_selector.active.disable_deny_escalating_exec:
-    value: false
   .properties.plan1_selector.active.master_az_placement:
     value:
     - pks-az1
