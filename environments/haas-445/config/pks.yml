@@ -12,7 +12,7 @@ product-properties:
   .properties.cloud_provider.vsphere.vcenter_ds:
     value: LUN01
   .properties.cloud_provider.vsphere.vcenter_ip:
-    value: vcsa-01.haas-408.pez.pivotal.io
+    value: vcsa-01.haas-445.pez.pivotal.io
   .properties.cloud_provider.vsphere.vcenter_master_creds:
     value:
       identity: administrator@vsphere.local
@@ -41,7 +41,7 @@ product-properties:
   .properties.network_selector.nsx.nsx-t-ca-cert:
     value: ((nsx_cert_root_ca))
   .properties.network_selector.nsx.nsx-t-host:
-    value: nsxmgr-01.haas-408.pez.pivotal.io
+    value: nsxmgr-01.haas-445.pez.pivotal.io
   .properties.network_selector.nsx.nsx-t-insecure:
     value: true
   .properties.network_selector.nsx.nsx-t-superuser-certificate:
@@ -56,7 +56,7 @@ product-properties:
     selected_option: disabled
     value: disabled
   .properties.pks_api_hostname:
-    value: api.pks.haas-408.pez.pivotal.io
+    value: api.pks.haas-445.pez.pivotal.io
   .properties.plan1_selector:
     selected_option: active
     value: Plan Active
