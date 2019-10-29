@@ -91,12 +91,18 @@ product-properties:
   .properties.syslog_selector:
     selected_option: disabled
     value: disabled
-  .properties.telemetry_selector:
-    selected_option: disabled
-    value: disabled
   .properties.uaa:
     selected_option: internal
     value: internal
+  .properties.telemetry_installation_purpose_selector:
+    selected_option: not_provided
+    value: not_provided
+  .properties.telemetry_selector:
+    selected_option: disabled
+    value: disabled
+  .properties.oidc_selector:
+    selected_option: disabled
+    value: disabled
   .properties.uaa_pks_cli_access_token_lifetime:
     value: 600
   .properties.uaa_pks_cli_refresh_token_lifetime:

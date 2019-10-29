@@ -18,42 +18,42 @@ resources:
       secret_access_key: ((s3_secret_access_key))
       regexp: ((environment))/(state).yml
       skip_ssl_verification: true
-#  - name: pks-product
-#    type: s3
-#    source:
-#      access_key_id: ((s3_access_key_id))
-#      bucket: ((s3.buckets.pivnet_products))
-#      endpoint: ((s3.endpoint))
-#      secret_access_key: ((s3_secret_access_key))
-#      regexp: pivotal-container-service-(.*).pivotal
-#      skip_ssl_verification: true
-#  - name: pks-stemcell
-#    type: s3
-#    source:
-#      access_key_id: ((s3_access_key_id))
-#      bucket: ((s3.buckets.pivnet_products))
-#      endpoint: ((s3.endpoint))
-#      secret_access_key: ((s3_secret_access_key))
-#      regexp: pks-stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
-#      skip_ssl_verification: true
-#  - name: harbor-product
-#    type: s3
-#    source:
-#      access_key_id: ((s3_access_key_id))
-#      bucket: ((s3.buckets.pivnet_products))
-#      endpoint: ((s3.endpoint))
-#      secret_access_key: ((s3_secret_access_key))
-#      regexp: harbor-container-registry-(.*)\.pivotal
-#      skip_ssl_verification: true
-#  - name: harbor-stemcell
-#    type: s3
-#    source:
-#      access_key_id: ((s3_access_key_id))
-#      bucket: ((s3.buckets.pivnet_products))
-#      endpoint: ((s3.endpoint))
-#      secret_access_key: ((s3_secret_access_key))
-#      regexp: harbor-stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
-#      skip_ssl_verification: true
+  - name: pks-product
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: pivotal-container-service-(.*).pivotal
+      skip_ssl_verification: true
+  - name: pks-stemcell
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: pks-stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
+      skip_ssl_verification: true
+  - name: harbor-product
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: harbor-container-registry-(.*)\.pivotal
+      skip_ssl_verification: true
+  - name: harbor-stemcell
+    type: s3
+    source:
+      access_key_id: ((s3_access_key_id))
+      bucket: ((s3.buckets.pivnet_products))
+      endpoint: ((s3.endpoint))
+      secret_access_key: ((s3_secret_access_key))
+      regexp: harbor-stemcell/bosh-stemcell-(.*)-vsphere.*\.tgz
+      skip_ssl_verification: true
   - name: installation
     type: s3
     source:
@@ -220,8 +220,6 @@ jobs:
           - get: platform-automation-image
             params:
               unpack: true
-          - get: one-time-trigger
-            trigger: true
           - get: platform-automation-tasks
             params:
               unpack: true
@@ -229,7 +227,7 @@ jobs:
           - get: state
           - get: opsman-product
           - get: installation
-            passed: [export-installation]
+            passed: [export-installation, install-opsman]
       - task: credhub-interpolate
         <<: *credhub-interpolate
       - task: upgrade-opsman
@@ -237,10 +235,13 @@ jobs:
         file: platform-automation-tasks/tasks/upgrade-opsman.yml
         input_mapping:
           image: opsman-product
+          env: vars
         params:
           VARS_FILES: vars/environments/((environment))/vars/opsman.yml
+          ENV_FILE: environments/((environment))/env/env.yml
           STATE_FILE: state.yml
           OPSMAN_CONFIG_FILE: /environments/((environment))/config/opsman.yml
+          INSTALLATION_FILE: pks-installation-*.zip
         ensure: *put-state
       - task: configure-director
         image: platform-automation-image
@@ -269,3 +270,112 @@ jobs:
       - put: installation
         params:
           file: installation/pks-installation*.zip
+
+  - name: upload-and-stage-pks
+    plan:
+      - aggregate:
+          - get: platform-automation-image
+            params:
+              unpack: true
+          - get: platform-automation-tasks
+            params:
+              unpack: true
+          - get: config
+            passed: [upgrade-opsman]
+          - get: pks-stemcell
+          - get: pks-product
+      - task: credhub-interpolate
+        <<: *credhub-interpolate
+      - task: upload-and-stage-product
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/upload-and-stage-product.yml
+        input_mapping:
+          env: vars
+          product: pks-product
+        params:
+          ENV_FILE: environments/((environment))/env/env.yml
+      - task: uopload-stemcell
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/upload-stemcell.yml
+        input_mapping:
+          env: vars
+          stemcell: pks-stemcell
+        params:
+          ENV_FILE: environments/((environment))/env/env.yml
+  - name: upload-and-stage-harbor
+    plan:
+      - aggregate:
+          - get: platform-automation-image
+            params:
+              unpack: true
+          - get: platform-automation-tasks
+            params:
+              unpack: true
+          - get: config
+            passed: [upgrade-opsman]
+          - get: harbor-stemcell
+          - get: harbor-product
+      - task: credhub-interpolate
+        <<: *credhub-interpolate
+      - task: upload-and-stage-product
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/upload-and-stage-product.yml
+        input_mapping:
+          env: vars
+          product: harbor-product
+        params:
+          ENV_FILE: environments/((environment))/env/env.yml
+      - task: uopload-stemcell
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/upload-stemcell.yml
+        input_mapping:
+          env: vars
+          stemcell: harbor-stemcell
+        params:
+          ENV_FILE: environments/((environment))/env/env.yml
+
+  - name: configure-pks
+    plan:
+      - aggregate:
+          - get: platform-automation-image
+            params:
+              unpack: true
+          - get: platform-automation-tasks
+            passed: [upload-and-stage-pks]
+            params:
+              unpack: true
+          - get: config
+      - task: credhub-interpolate
+        <<: *credhub-interpolate
+      - task: configure-product
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/configure-product.yml
+        input_mapping:
+          env: vars
+        params:
+          ENV_FILE: environments/((environment))/env/env.yml
+          CONFIG_FILE: environments/((environment))/config/pks.yml
+          VARS_FILES: vars/environments/((environment))/vars/pks.yml
+
+  - name: configure-harbor
+    plan:
+      - aggregate:
+          - get: platform-automation-image
+            params:
+              unpack: true
+          - get: platform-automation-tasks
+            params:
+              unpack: true
+          - get: config
+            passed: [upload-and-stage-harbor]
+      - task: credhub-interpolate
+        <<: *credhub-interpolate
+      - task: configure-product
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/configure-product.yml
+        input_mapping:
+          env: vars
+        params:
+          ENV_FILE: environments/((environment))/env/env.yml
+          CONFIG_FILE: environments/((environment))/config/harbor.yml
+          VARS_FILES: vars/environments/((environment))/vars/harbor.yml
