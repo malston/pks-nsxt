@@ -2,7 +2,7 @@ vcenter_password: ((vcenter_password))
 pks_api_certificate : ((pks_certificate.certificate))
 pks_api_private_key: ((pks_certificate.private_key))
 nsx_cert_root_ca: ((nsx_ca.certificate))
-nsx_superuser_cert_public_key: ((nsx_superuser.public_key))
+nsx_superuser_cert_public_key: ((nsx_superuser.certificate))
 nsx_superuser_cert_private_key: ((nsx_superuser.private_key))
 nsx_floating_ip_pool_id: d9ebb9a6-867c-4d83-a060-354d9fb8c879
 nsx_pods_ip_block_id: 5f3f4501-93c5-4af7-a0bd-94c0a5a8a07e
