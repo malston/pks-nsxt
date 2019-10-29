@@ -2,7 +2,7 @@ properties-configuration:
   iaas_configuration:
     vcenter_host: ((vcenter_host))
     vcenter_username: ((vcenter_username))
-    vcenter_password: ((vcenter_password))
+    vcenter_password: "((vcenter_password))"
     datacenter: ((vsphere_datacenter))
     ssl_verification_enabled: false
     disk_type: thin
@@ -15,7 +15,7 @@ properties-configuration:
     nsx_mode: nsx-t
     nsx_address: ((nsx_host))
     nsx_username: ((nsx_admin_user))
-    nsx_password: ((nsx_admin_password))
+    nsx_password: "((nsx_admin_password))"
     nsx_ca_certificate: ((nsx_ca_cert))
   director_configuration:
     ntp_servers_string: ((ntp))
