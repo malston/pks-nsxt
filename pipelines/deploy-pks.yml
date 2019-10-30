@@ -223,11 +223,11 @@ jobs:
           - get: platform-automation-tasks
             params:
               unpack: true
+            passed: [install-opsman]
           - get: config
           - get: state
           - get: opsman-product
           - get: installation
-            passed: [export-installation, install-opsman]
       - task: credhub-interpolate
         <<: *credhub-interpolate
       - task: upgrade-opsman
@@ -280,8 +280,8 @@ jobs:
           - get: platform-automation-tasks
             params:
               unpack: true
-          - get: config
             passed: [upgrade-opsman]
+          - get: config
           - get: pks-stemcell
           - get: pks-product
       - task: credhub-interpolate
@@ -311,8 +311,8 @@ jobs:
           - get: platform-automation-tasks
             params:
               unpack: true
-          - get: config
             passed: [upgrade-opsman]
+          - get: config
           - get: harbor-stemcell
           - get: harbor-product
       - task: credhub-interpolate
@@ -366,8 +366,8 @@ jobs:
           - get: platform-automation-tasks
             params:
               unpack: true
-          - get: config
             passed: [upload-and-stage-harbor]
+          - get: config
       - task: credhub-interpolate
         <<: *credhub-interpolate
       - task: configure-product
@@ -379,3 +379,24 @@ jobs:
           ENV_FILE: environments/((environment))/env/env.yml
           CONFIG_FILE: environments/((environment))/config/harbor.yml
           VARS_FILES: vars/environments/((environment))/vars/harbor.yml
+
+  - name: apply-changes
+    plan:
+      - aggregate:
+          - get: platform-automation-image
+            params:
+              unpack: true
+          - get: platform-automation-tasks
+            params:
+              unpack: true
+            passed: [configure-harbor,configure-pks]
+          - get: config
+      - task: credhub-interpolate
+        <<: *credhub-interpolate
+      - task: apply-changes
+        image: platform-automation-image
+        file: platform-automation-tasks/tasks/apply-changes.yml
+        input_mapping:
+          env: vars
+        params:
+          ENV_FILE: environments/((environment))/env/env.yml
