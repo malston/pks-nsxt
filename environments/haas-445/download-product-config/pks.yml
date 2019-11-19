@@ -2,5 +2,5 @@
 pivnet-api-token: ((pivnet_token))
 pivnet-file-glob: "pivotal-container-service*.pivotal"
 pivnet-product-slug: pivotal-container-service
-product-version-regex: ^1\.5\..*$
+product-version-regex: ^1\.6\..*$
 stemcell-iaas: vsphere

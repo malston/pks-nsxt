@@ -2,5 +2,5 @@
 pivnet-api-token: ((pivnet_token))
 pivnet-file-glob: "harbor-container-registry-*.pivotal"
 pivnet-product-slug: harbor-container-registry
-product-version-regex: ^1\.8\..*$
+product-version-regex: ^1\.[89]\..*$
 stemcell-iaas: vsphere
